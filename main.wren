@@ -1,57 +1,239 @@
-import "./vector" for Vector
+class Vector {
+	x { _x }
+	y { _y }
+	z { _z }
+	w { _w }
+	arity { _arity }
 
-var v2 = Vector.new(2.3, -3.4)
-var v3 = Vector.new(2.3, -3.4, 4.5)
-var v4 = Vector.new(2.3, -3.4, 4.5, 5.6)
+	toString { 
+		if( _arity == 2 ){
+			return "[ %( _x ), %( _y ), ]"
+		}
+		if( _arity == 3 ){
+			return "[ %( _x ), %( _y ), %( _z ), ]"
+		}
+		if( _arity == 4 ){
+			return "[ %( _x ), %( _y ), %( _z ), %( _w ), ]"
+		}
+	}
 
-System.print("\n\n2D Vector\n=========\n")
-System.print( v2 )
-System.print( v2.magnitude )
-System.print( v2.normalise )
-System.print( v2.abs)
-System.print( v2.floor)
-System.print( v2.ceil)
-System.print( v2 + v2 )
-System.print( v2 - v2 )
-System.print( v2 * v2 )
-System.print( v2 / v2 )
-System.print( v2 * 2 )
-System.print( v2 / 2 )
-System.print( v2.dot( Vector.new( 1, 1 ) ) )
-System.print( v2 == Vector.new(2.3, -3.4) )
-System.print( v2 == Vector.new(1, 1) )
+	magnitude { 
+		var acc = 0
+		for ( i in 0..._arity ){
+			acc = acc + ( this[i] * this[i] )
+		}
+		return acc.sqrt
+	}
 
-System.print("\n\n3D Vector\n=========\n")
-System.print( v3 )
-System.print( v3.magnitude )
-System.print( v3.normalise )
-System.print( v3.abs)
-System.print( v3.floor)
-System.print( v3.ceil)
-System.print( v3 + v3 )
-System.print( v3 - v3 )
-System.print( v3 * v3 )
-System.print( v3 / v3 )
-System.print( v3 * 3 )
-System.print( v3 / 3 )
-System.print( v3.dot( Vector.new( 1, 1, 1 ) ) )
-System.print( v3 == Vector.new(2.3, -3.4, 4.5) )
-System.print( v3 == Vector.new(1, 1, 1) )
-System.print( v3.cross( Vector.new( 1, 1, 1 ) ) )
+	normalise { this / this.magnitude }
 
-System.print("\n\n4D Vector\n=========\n")
-System.print( v4 )
-System.print( v4.magnitude )
-System.print( v4.normalise )
-System.print( v4.abs)
-System.print( v4.floor)
-System.print( v4.ceil)
-System.print( v4 + v4 )
-System.print( v4 - v4 )
-System.print( v4 * v4 )
-System.print( v4 / v4 )
-System.print( v4 * 4 )
-System.print( v4 / 4 )
-System.print( v4.dot( Vector.new( 1, 1, 1, 1 ) ) )
-System.print( v4 == Vector.new(2.3, -3.4, 4.5, 5.6) )
-System.print( v4 == Vector.new(1, 1, 1, 1) )
+	abs { 
+		var v = Vector.ofArity(_arity)
+		for( i in 0..._arity ){
+			v[i] = this[i].abs
+		}
+
+		return v
+	}
+	
+	floor { 
+		var v = Vector.ofArity(_arity)
+		for( i in 0..._arity ){
+			v[i] = this[i].floor
+		}
+
+		return v
+	}
+	
+	ceil { 
+		var v = Vector.ofArity(_arity)
+		for( i in 0..._arity ){
+			v[i] = this[i].ceil
+		}
+
+		return v
+	}
+
+	[ i ] {
+		if(i == 0){
+			return _x
+		}
+		if(i == 1){
+			return _y
+		}
+		if(i == 2 && _arity > 2){
+			return _z
+		}
+		if(i == 3 && _arity > 2){
+			return _w
+		}
+
+		return null
+	}
+
+	x=(val){ _x = val }
+	y=(val){ _y = val }
+	z=(val){ _z = val }
+	w=(val){ _w = val }
+
+	[ i ]=(val) {
+		if(i == 0){
+			_x = val
+		}
+		if(i == 1){
+			_y = val
+		}
+		if(i == 2 && _arity > 2){
+			_z = val
+		}
+		if(i == 3 && _arity > 2){
+			_w = val
+		}
+
+		return null
+	}
+
+	== (other) {
+		if( _arity != other.arity ){
+			Fiber.abort("can not compare vectors of un-equal arity")
+		}
+
+		var acc = true
+		for ( i in 0..._arity ){
+			acc = acc && this[i] == other[i]
+		}
+		return acc
+	}
+
+	+ (other) {
+		if( _arity != other.arity ){
+			Fiber.abort("can not add vectors of un-equal arity")
+		}
+
+		var v = Vector.ofArity(_arity)
+		for ( i in 0..._arity ){
+			v[i] = this[i] + other[i]
+		}
+		return v
+	}
+
+	- (other) {
+		if( _arity != other.arity ){
+			Fiber.abort("can not subtract vectors of un-equal arity")
+		}
+
+		var v = Vector.ofArity(_arity)
+		for ( i in 0..._arity ){
+			v[i] = this[i] - other[i]
+		}
+		return v
+	}
+
+	* (other) {
+		if(other is Vector){
+			if( _arity != other.arity ){
+				Fiber.abort("can not divide vectors of un-equal arity")
+			}
+
+			var v = Vector.ofArity(_arity)
+			for ( i in 0..._arity ){
+				v[i] = this[i] * other[i]
+			}
+			return v
+		} 
+
+		if (other is Num) {
+			var v = Vector.ofArity(_arity)
+			for ( i in 0..._arity ){
+				v[i] = this[i] * other
+			}
+			return v
+		}
+
+		Fiber.abort("can only multiply a Vector by a Num or another Vector")
+	}
+
+	/ (other) {
+		if(other is Vector){
+			if( _arity != other.arity ){
+				Fiber.abort("can not divide vectors of un-equal arity")
+			}
+
+			var v = Vector.ofArity(_arity)
+			for ( i in 0..._arity ){
+				v[i] = this[i] / other[i]
+			}
+			return v
+		} 
+
+		if (other is Num) {
+			var v = Vector.ofArity(_arity)
+			for ( i in 0..._arity ){
+				v[i] = this[i] / other
+			}
+			return v
+		}
+
+		Fiber.abort("can only divide a Vector by a Num or another Vector")
+	}
+
+	dot(other) {
+		//the dot product, returns a Num
+		if( _arity != other.arity ){
+			Fiber.abort("can not dot product vectors of un-equal arity")
+		}
+
+		var acc = 0
+		for ( i in 0..._arity ){
+			acc = acc + ( this[i] * other[i] )
+		}
+
+		return acc
+	}
+
+	cross(other) {
+		//the cross product, returns a Vector
+		if( _arity != 3 ){
+			Fiber.abort("can only cross product vectors of arity 3")
+		}
+
+		var x = ( this[1] * other[2] ) - ( this[2] * other[1] )
+		var y = ( this[2] * other[0] ) - ( this[0] * other[2] )
+		var z = ( this[0] * other[1] ) - ( this[1] * other[0] )
+
+		return Vector.new(x, y, z)
+	}
+
+	construct new(x, y) {
+		_arity = 2
+		_x = x
+		_y = y
+	}
+
+	construct new(x, y, z) {
+		_arity = 3
+		_x = x
+		_y = y
+		_z = z
+	}
+
+	construct new(x, y, z, w) {
+		_arity = 4
+		_x = x
+		_y = y
+		_z = z
+		_w = w
+	}
+
+	static ofArity(n) {
+		if( n == 2 ){
+			return Vector.new(0, 0)
+		}
+		if( n == 3 ){
+			return Vector.new(0, 0, 0)
+		}
+		if( n == 4 ){
+			return Vector.new(0, 0, 0, 0)
+		}
+	}
+}
